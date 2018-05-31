@@ -1,2 +1,2 @@
-### SmNav, a lightweight Dropbox client for Android ~~that is not terrible like the official~~
+### SmNav, a lightweight Dropbox client for Android *~~that tries to not be as terrible as the official~~*
 My main motivaion for this projet is that i (*as you can see*) don't like the official Dropbox client.
