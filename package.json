@@ -33,7 +33,7 @@
     "cordova-plugin-inappbrowser": "^3.0.0",
     "cordova-plugin-photo-library": "^2.1.1",
     "cordova-plugin-x-toast": "^2.6.2",
-    "dropbox": "^4.0.5",
+    "dropbox": "^4.0.4",
     "font-awesome": "^4.7.0",
     "ionic-angular": "3.9.2",
     "ionicons": "3.0.0",
