@@ -5,6 +5,7 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
+import { DropboxPage } from '../pages/dropbox/dropbox';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -18,7 +19,8 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
   declarations: [
     MyApp,
     HomePage,
-    ListPage
+    ListPage,
+    DropboxPage
   ],
   imports: [
     BrowserModule,
@@ -28,7 +30,8 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
   entryComponents: [
     MyApp,
     HomePage,
-    ListPage
+    ListPage,
+    DropboxPage
   ],
   providers: [
     StatusBar,
