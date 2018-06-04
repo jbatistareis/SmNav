@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, NavParams, Loading } from 'ionic-angular';
+import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading } from 'ionic-angular';
 import { PhotoLibrary } from '@ionic-native/photo-library';
 import { Toast } from '@ionic-native/toast';
-import { InAppBrowser } from '@ionic-native/in-app-browser';
+import { InAppBrowser, InAppBrowserObject, InAppBrowserEvent } from '@ionic-native/in-app-browser';
 import { AndroidPermissions } from '@ionic-native/android-permissions';
 
 import { Dropbox } from 'dropbox';
@@ -47,31 +47,28 @@ export class DropboxPage {
     public navCtrl: NavController,
     private loadingController: LoadingController,
     private alertController: AlertController,
+    private modalController: ModalController,
     private androidPermissions: AndroidPermissions,
     private inAppBrowser: InAppBrowser,
     private photoLibrary: PhotoLibrary,
     public navParams: NavParams) {
 
-    // for test, remove later
+    // try to get it from storage
+    // this string is for for test, the access for this app will be revoked later
     this.accessToken = 'guAwJCHUOC0AAAAAAAACNhvVvHjtV2ko60f_2e0TdoaREDuu2S3Fr_UFE3XHxgR-';
 
-    if (this.accessToken) {
-      this.showLoading();
+    this.showLoading();
+    if (navParams.get('folder'))
+      this.selectedFolder = '/' + navParams.get('folder');
+    else
+      this.selectedFolder = '/';
 
-      if (navParams.get('folder'))
-        this.selectedFolder = '/' + navParams.get('folder');
-      else
-        this.selectedFolder = '/';
-
-      this.dropbox = new Dropbox({ accessToken: this.accessToken });
-      this.listFolder(this.selectedFolder.substring(1))
-        .then((list) => {
-          this.items = list;
-          this.dismissLoading();
-        });
-    } else {
-      // TODO
-    }
+    this.dropbox = new Dropbox({ accessToken: this.accessToken });
+    this.listFolder(this.selectedFolder.substring(1))
+      .then((list) => {
+        this.items = list;
+        this.dismissLoading();
+      });
   }
 
   // dropbox methods
@@ -248,6 +245,37 @@ export class DropboxPage {
   //TODO find the magic behind it
   uploadFile(event) {
 
+  }
+
+  login($event) {
+    this.dropbox = new Dropbox({ clientId: '4qlsux16dbkc0pv' });
+
+    let redirectUrl = 'http://localhost/callback';
+    let browser: InAppBrowserObject = this.inAppBrowser.create(this.dropbox.getAuthenticationUrl(redirectUrl), '_self', 'location=no');
+
+    let listener = browser.on('loadstart').subscribe(
+      (event: any) => {
+        //Ignore the dropbox authorize screen
+        if (event.url.indexOf('oauth2/authorize') > -1)
+          return;
+
+        //Check the redirect uri
+        if (event.url.indexOf(redirectUrl) > -1) {
+          listener.unsubscribe();
+          browser.close();
+
+          this.accessToken = event.url.split('=')[1].split('&')[0];
+          /*
+          this.nativeStorage.setItem('dropboxAccessToken', { accessToken: this.accessToken }).then(
+            () => event.resolve(event.url)
+          );
+          */
+        } else {
+          listener.unsubscribe();
+          event.reject();
+        }
+      }
+    )
   }
 
   // auxiliary
