@@ -232,8 +232,7 @@ export class DropboxPage {
   }
 
   downloadFile(file) {
-    this.toast.showShortBottom('Downloading file')
-      .subscribe((toast) => { });
+    this.toast.showShortBottom('Downloading file').subscribe((toast) => { });
 
     // save to galery
     this.photoLibrary.saveImage('https://content.dropboxapi.com/2/files/download?authorization=Bearer '
