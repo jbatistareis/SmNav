@@ -243,6 +243,8 @@ export class DropboxPage {
         });
 
     // download
+    this.toast.showShortBottom('Downloading, please wait...').subscribe((toast) => { });
+
     let dropboxFile = new XMLHttpRequest();
     dropboxFile.responseType = 'blob';
     dropboxFile.open('GET', 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken + ';arg={"path": "' + fileData.path_display + '"}');
