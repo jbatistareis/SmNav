@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading } from 'ionic-angular';
-import { PhotoLibrary } from '@ionic-native/photo-library';
+import { File } from '@ionic-native/file';
 import { Toast } from '@ionic-native/toast';
 import { InAppBrowser, InAppBrowserObject, InAppBrowserEvent } from '@ionic-native/in-app-browser';
 import { AndroidPermissions } from '@ionic-native/android-permissions';
@@ -50,7 +50,6 @@ export class DropboxPage {
     private modalController: ModalController,
     private androidPermissions: AndroidPermissions,
     private inAppBrowser: InAppBrowser,
-    private photoLibrary: PhotoLibrary,
     public navParams: NavParams) {
 
     // try to get it from storage
@@ -172,10 +171,10 @@ export class DropboxPage {
         break;
 
       case 'file':
-        this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
+        this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE)
           .then(
             () => this.downloadFile(file),
-            () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
+            () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE)
               .then(
                 (success) => success.hasPermission
                   ? this.downloadFile(file)
@@ -231,19 +230,46 @@ export class DropboxPage {
     confirm.present();
   }
 
-  downloadFile(file) {
-    this.toast.showShortBottom('Downloading file').subscribe((toast) => { });
+  downloadFile(fileData) {
+    let file = new File();
 
-    // save to galery
-    this.photoLibrary.saveImage('https://content.dropboxapi.com/2/files/download?authorization=Bearer '
-      + this.accessToken + ';arg={"path": "' + file.path_display + '"}',
-      'SmNav')
-      .then(() => this.toast.showShortBottom('File saved').subscribe((toast) => { }));
+    // check dir
+    file.checkDir('cdvfile://localhost/sdcard/', 'SmNav')
+      .then(
+        (ok) => { },
+        (error) => {
+          file.resolveDirectoryUrl('cdvfile://localhost/sdcard/')
+            .then((directoryEntry) => file.getDirectory(directoryEntry, 'SmNav', { create: true }));
+        });
+
+    // download
+    let dropboxFile = new XMLHttpRequest();
+    dropboxFile.responseType = 'blob';
+    dropboxFile.open('GET', 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken + ';arg={"path": "' + fileData.path_display + '"}');
+
+    dropboxFile.addEventListener("load", () => {
+      file.writeFile('cdvfile://localhost/sdcard/SmNav', fileData.name, dropboxFile.response, { replace: true })
+        .then(() => this.toast.showShortBottom('File saved').subscribe((toast) => { }))
+        .catch((error) => this.toast.showLongCenter(error.message).subscribe((toast) => { }));
+    });
+
+    dropboxFile.send();
   }
 
   //TODO find the magic behind it
   uploadFile(event) {
+    this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
+      .then(
+        () => this.pickAndSendFile,
+        () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
+          .then(
+            (success) => success.hasPermission
+              ? this.pickAndSendFile
+              : this.toast.showLongBottom('Cannot obtain permission').subscribe((toast) => { })));
+  }
 
+  pickAndSendFile() {
+    // TODO
   }
 
   login($event) {

@@ -2,7 +2,7 @@
   "name": "SmNav",
   "version": "0.0.1",
   "author": "Joao Batista",
-  "homepage": "http://gothub.com/jbatista/",
+  "homepage": "http://github.com/jbatista/",
   "private": true,
   "scripts": {
     "clean": "ionic-app-scripts clean",
@@ -23,15 +23,23 @@
     "@angular/platform-browser-dynamic": "5.2.10",
     "@ionic-native/android-permissions": "^4.7.0",
     "@ionic-native/core": "4.7.0",
+    "@ionic-native/file": "^4.12.0",
     "@ionic-native/in-app-browser": "^4.7.0",
     "@ionic-native/photo-library": "^4.7.0",
     "@ionic-native/splash-screen": "4.7.0",
-    "@ionic-native/status-bar": "4.7.0",
+    "@ionic-native/status-bar": "^4.7.0",
     "@ionic-native/toast": "^4.7.0",
     "@ionic/storage": "2.1.3",
+    "cordova-android": "7.0.0",
     "cordova-plugin-android-permissions": "^1.0.0",
+    "cordova-plugin-device": "^2.0.2",
+    "cordova-plugin-file": "^5.0.0",
     "cordova-plugin-inappbrowser": "^3.0.0",
-    "cordova-plugin-photo-library": "^2.1.1",
+    "cordova-plugin-ionic-keyboard": "^2.0.5",
+    "cordova-plugin-ionic-webview": "^1.1.19",
+    "cordova-plugin-splashscreen": "^5.0.2",
+    "cordova-plugin-statusbar": "^2.4.2",
+    "cordova-plugin-whitelist": "^1.3.3",
     "cordova-plugin-x-toast": "^2.6.2",
     "dropbox": "^4.0.9",
     "font-awesome": "^4.7.0",
@@ -49,12 +57,19 @@
   "cordova": {
     "plugins": {
       "cordova-plugin-x-toast": {},
-      "cordova-plugin-photo-library": {
-        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "To choose photos"
-      },
       "cordova-plugin-inappbrowser": {},
-      "cordova-plugin-android-permissions": {}
-    }
+      "cordova-plugin-android-permissions": {},
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-ionic-webview": {},
+      "cordova-plugin-ionic-keyboard": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-file": {}
+    },
+    "platforms": [
+      "android"
+    ]
   },
   "config": {
     "ionic_copy": "./scripts/copy-custom-libs.js"
