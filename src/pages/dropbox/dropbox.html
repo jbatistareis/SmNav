@@ -4,8 +4,11 @@
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Dropbox</ion-title>
-    <ion-buttons end>
-      <button ion-button icon-only *ngIf="!loginButton" (click)="uploadFile($event)">
+    <ion-buttons end *ngIf="!loginButton">
+      <button ion-button icon-only (click)="reload()">
+        <i class="fa fa-refresh fa-lg"></i>
+      </button>
+      <button ion-button icon-only (click)="uploadFile($event)">
         <i class="fa fa-cloud-upload fa-lg"></i>
       </button>
     </ion-buttons>
@@ -23,9 +26,6 @@
   </div>
 
   <div *ngIf="!loginButton">
-    <ion-refresher (ionRefresh)="reload($event)">
-      <ion-refresher-content></ion-refresher-content>
-    </ion-refresher>
     <ion-list>
       <ion-item-sliding *ngFor="let item of items">
         <!-- directory -->

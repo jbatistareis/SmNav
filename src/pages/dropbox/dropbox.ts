@@ -190,13 +190,13 @@ export class DropboxPage {
     }
   }
 
-  reload(refresher) {
+  reload() {
     this.showLoading();
     this.listFolder(this.selectedFolder.substring(1))
       .then((list) => {
         this.items = list;
         this.dismissLoading();
-        refresher.complete();
+        // refresher.complete();
       });
   }
 
@@ -254,15 +254,16 @@ export class DropboxPage {
     dropboxRequest.open('GET', 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken
       + ';arg={"path": "' + fileData.path_display + '"}');
 
-    dropboxRequest.addEventListener('load', () => {
+    dropboxRequest.onload = () => {
       file.writeFile('cdvfile://localhost/sdcard/SmNav', fileData.name, dropboxRequest.response, { replace: true })
         .then(() => this.toast.showShortBottom('File saved').subscribe((toast) => { }))
         .catch((error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
-    });
+    };
 
-    dropboxRequest.addEventListener('progress', (info) => {
-      fileData['downloadProgress'] = Math.round((info.loaded / info.total) * 100);
-    });
+    dropboxRequest.onprogress = (info) => { fileData['downloadProgress'] = Math.round((info.loaded / info.total) * 100); };
+
+    dropboxRequest.onerror = (error) => (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
+
 
     dropboxRequest.send();
   }
@@ -281,30 +282,34 @@ export class DropboxPage {
 
   pickAndSendFile() {
     this.fileChooser.open()
-      .then((uri) => {
-        let dropboxRequest = new XMLHttpRequest();
-        dropboxRequest.addEventListener('progress', (info) => {
-          
-        });
+      .then(
+        (uri) => {
+          let dropboxRequest = new XMLHttpRequest();
 
-        window.FilePath.resolveNativePath(
-          uri,
-          (url) => {
-            dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
-              + ';arg={"path": "' + (this.selectedFolder + url.substring(url.lastIndexOf('/'))).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
+          dropboxRequest.upload.onprogress = (info) => {
+            'Progress: ' + Math.round((info.loaded / info.total) * 100) + '%'
+          };
 
-            window.resolveLocalFileSystemURL(
-              url,
-              (fileEntry) => fileEntry.file(
-                (file) => {
-                  let fileReader = new FileReader();
-                  fileReader.onloadend = () => dropboxRequest.send(new Blob([new Uint8Array(fileReader.result)], { type: 'application/octet-stream' }));
-                  fileReader.readAsArrayBuffer(file);
-                }),
-              (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
-          },
-          (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
-      })
+          dropboxRequest.onerror = (error) => (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
+
+          window.FilePath.resolveNativePath(
+            uri,
+            (url) => {
+              dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
+                + ';arg={"path": "' + (this.selectedFolder + url.substring(url.lastIndexOf('/'))).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
+
+              window.resolveLocalFileSystemURL(
+                url,
+                (fileEntry) => fileEntry.file(
+                  (file) => {
+                    let fileReader = new FileReader();
+                    fileReader.onloadend = () => dropboxRequest.send(new Blob([new Uint8Array(fileReader.result)], { type: 'application/octet-stream' }));
+                    fileReader.readAsArrayBuffer(file);
+                  }),
+                (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
+            },
+            (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
+        })
       .catch((error) => this.toast.showShortCenter(error).subscribe((toast) => { }));
   }
 
