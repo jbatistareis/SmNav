@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading } from 'ionic-angular';
+import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading, BlockerDelegate } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { Toast } from '@ionic-native/toast';
 import { InAppBrowser, InAppBrowserObject } from '@ionic-native/in-app-browser';
@@ -290,8 +290,15 @@ export class DropboxPage {
           (url) => {
             dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
               + ';arg={"path": "' + (this.selectedFolder + url.substring(url.lastIndexOf('/'))).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
-            console.log(new File().resolveLocalFilesystemUrl(url))
-            // dropboxRequest.send();
+
+            window.resolveLocalFileSystemURL(
+              url,
+              (fileEntry) => fileEntry.file((file) => {
+                let fileReader = new FileReader();
+                fileReader.onloadend = () => dropboxRequest.send(new Blob([new Uint8Array(fileReader.result)]));
+                fileReader.readAsArrayBuffer(file);
+              }),
+              (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
           },
           (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
       })
