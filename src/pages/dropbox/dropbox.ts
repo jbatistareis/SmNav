@@ -284,11 +284,29 @@ export class DropboxPage {
     this.fileChooser.open()
       .then(
         (uri) => {
+          let filename = url.substring(url.lastIndexOf('/') + 1)).replace(/\/+/g, '/');
+        
+          let alert = this.alertController.create({
+            title: 'Upload status',
+            subTitle: filename,
+            message: '',
+            buttons: ['Hide']
+          });
+        
           let dropboxRequest = new XMLHttpRequest();
 
-          dropboxRequest.upload.onprogress = (info) => {
-            'Progress: ' + Math.round((info.loaded / info.total) * 100) + '%'
+          dropboxRequest.upload.onloadstart = () => {
+            alert.present();
           };
+
+          dropboxRequest.upload.onprogress = (info) => {
+            alert.setMessage(
+              '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>
+              + '<p>Progress: ' + Math.round((info.loaded / info.total) * 100) + '%</p>'
+            );
+          };
+          
+          dropboxRequest.upload.onloadend = () => this.toast.showShortBottom('Upload finished').subscribe((toast) => { });
 
           dropboxRequest.onerror = (error) => (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
 
@@ -296,7 +314,7 @@ export class DropboxPage {
             uri,
             (url) => {
               dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
-                + ';arg={"path": "' + (this.selectedFolder + url.substring(url.lastIndexOf('/'))).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
+                + ';arg={"path": "' + (this.selectedFolder + '/' + filename + '", "mode": "overwrite"}');
 
               window.resolveLocalFileSystemURL(
                 url,
