@@ -17,7 +17,7 @@
     <p></p>
     <ion-buttons>
       <button ion-button (click)="login($event)">
-        <i class="fa fa-dropbox"></i>&nbsp;Autorizar aplicativo
+        <i class="fa fa-dropbox"></i>&nbsp;Grant access to your Dropbox account
       </button>
     </ion-buttons>
   </div>
@@ -34,7 +34,7 @@
             <i class="fa fa-folder fa-2x"></i>
           </ion-avatar>
           <h2>{{item.name}}</h2>
-          <p>Diretório</p>
+          <p>Directory</p>
         </button>
         <!-- file -->
         <ion-item *ngIf="item.sizeHu" detail-none text-wrap>
@@ -43,7 +43,9 @@
             <img [src]="item.smallThumb" *ngIf="item.smallThumb" />
           </ion-avatar>
           <h2>{{item.name}}</h2>
-          <p>{{item.sizeHu}}</p>
+          <p>{{item.sizeHu}}
+            <span *ngIf="item.downloadProgress">&nbsp;({{item.downloadProgress}}%)</span>
+          </p>
         </ion-item>
         <ion-item-options side="left" *ngIf="item.sizeHu">
           <button style="width: 70px;" ion-button color="primary" (click)="select($event, item)">

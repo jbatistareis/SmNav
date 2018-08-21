@@ -2,8 +2,9 @@ import { Component } from '@angular/core';
 import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { Toast } from '@ionic-native/toast';
-import { InAppBrowser, InAppBrowserObject, InAppBrowserEvent } from '@ionic-native/in-app-browser';
+import { InAppBrowser, InAppBrowserObject } from '@ionic-native/in-app-browser';
 import { AndroidPermissions } from '@ionic-native/android-permissions';
+import { FileChooser } from '@ionic-native/file-chooser';
 
 import { Dropbox } from 'dropbox';
 
@@ -41,6 +42,7 @@ export class DropboxPage {
   private pdf: string[] = ['.pdf'];
 
   private loading: Loading;
+  private fileChooser: FileChooser = new FileChooser();
   private toast: Toast = new Toast();
 
   constructor(
@@ -53,7 +55,7 @@ export class DropboxPage {
     public navParams: NavParams) {
 
     // try to get it from storage
-    // this string is for for test, the access for this app will be revoked later
+    // this string is for test, the access for this app will be revoked later
     this.accessToken = 'guAwJCHUOC0AAAAAAAACNhvVvHjtV2ko60f_2e0TdoaREDuu2S3Fr_UFE3XHxgR-';
 
     this.showLoading();
@@ -156,7 +158,7 @@ export class DropboxPage {
           success(folders.concat(files));
         },
           (error) => {
-            this.toast.showLongBottom('Cannot list contents')
+            this.toast.showShortBottom('Cannot list contents')
               .subscribe((toast) => { });
           });
     });
@@ -178,7 +180,7 @@ export class DropboxPage {
               .then(
                 (success) => success.hasPermission
                   ? this.downloadFile(file)
-                  : this.toast.showLongBottom('Cannot obtain permission').subscribe((toast) => { })));
+                  : this.toast.showShortCenter('Cannot obtain permission').subscribe((toast) => { })));
         break;
 
       default:
@@ -245,33 +247,51 @@ export class DropboxPage {
     // download
     this.toast.showShortBottom('Downloading, please wait...').subscribe((toast) => { });
 
-    let dropboxFile = new XMLHttpRequest();
-    dropboxFile.responseType = 'blob';
-    dropboxFile.open('GET', 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken + ';arg={"path": "' + fileData.path_display + '"}');
+    let dropboxRequest = new XMLHttpRequest();
+    dropboxRequest.responseType = 'blob';
+    dropboxRequest.open('GET', 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken
+      + ';arg={"path": "' + fileData.path_display + '"}');
 
-    dropboxFile.addEventListener("load", () => {
-      file.writeFile('cdvfile://localhost/sdcard/SmNav', fileData.name, dropboxFile.response, { replace: true })
+    dropboxRequest.addEventListener('load', () => {
+      file.writeFile('cdvfile://localhost/sdcard/SmNav', fileData.name, dropboxRequest.response, { replace: true })
         .then(() => this.toast.showShortBottom('File saved').subscribe((toast) => { }))
-        .catch((error) => this.toast.showLongCenter(error.message).subscribe((toast) => { }));
+        .catch((error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
     });
 
-    dropboxFile.send();
+    dropboxRequest.addEventListener('progress', (info) => {
+      fileData['downloadProgress'] = Math.round((info.loaded / info.total) * 100);
+    });
+
+    dropboxRequest.send();
   }
 
-  //TODO find the magic behind it
+  // TODO find the magic behind it
   uploadFile(event) {
     this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
       .then(
-        () => this.pickAndSendFile,
+        () => this.pickAndSendFile(),
         () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
           .then(
             (success) => success.hasPermission
-              ? this.pickAndSendFile
-              : this.toast.showLongBottom('Cannot obtain permission').subscribe((toast) => { })));
+              ? this.pickAndSendFile()
+              : this.toast.showShortCenter('Cannot obtain permission').subscribe((toast) => { })));
   }
 
   pickAndSendFile() {
-    // TODO
+    this.fileChooser.open()
+      .then((uri) => {
+        let dropboxRequest = new XMLHttpRequest();
+
+        console.log('https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
+          + ';arg={"path": "' + this.selectedFolder + '/' + uri.substring(uri.lastIndexOf('/')) + '", "mode": "overwrite"}');
+        console.log(uri);
+
+        dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
+          + ';arg={"path": "' + this.selectedFolder + '/' + uri.substring(uri.lastIndexOf('/')) + '", "mode": "overwrite"}');
+
+        // dropboxRequest.send();
+      })
+      .catch((error) => this.toast.showShortCenter(error).subscribe((toast) => { }));
   }
 
   login($event) {
@@ -282,11 +302,11 @@ export class DropboxPage {
 
     let listener = browser.on('loadstart').subscribe(
       (event: any) => {
-        //Ignore the dropbox authorize screen
+        // Ignore the dropbox authorize screen
         if (event.url.indexOf('oauth2/authorize') > -1)
           return;
 
-        //Check the redirect uri
+        // Check the redirect uri
         if (event.url.indexOf(redirectUrl) > -1) {
           listener.unsubscribe();
           browser.close();
