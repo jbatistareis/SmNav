@@ -8,6 +8,8 @@ import { FileChooser } from '@ionic-native/file-chooser';
 
 import { Dropbox } from 'dropbox';
 
+declare var window: any;
+
 @Component({
   selector: 'page-dropbox',
   templateUrl: 'dropbox.html',
@@ -278,18 +280,20 @@ export class DropboxPage {
   }
 
   pickAndSendFile() {
+    console.dir(window)
     this.fileChooser.open()
       .then((uri) => {
         let dropboxRequest = new XMLHttpRequest();
 
-        console.log('https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
-          + ';arg={"path": "' + this.selectedFolder + '/' + uri.substring(uri.lastIndexOf('/')) + '", "mode": "overwrite"}');
-        console.log(uri);
-
-        dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
-          + ';arg={"path": "' + this.selectedFolder + '/' + uri.substring(uri.lastIndexOf('/')) + '", "mode": "overwrite"}');
-
-        // dropboxRequest.send();
+        window.FilePath.resolveNativePath(
+          uri,
+          (url) => {
+            dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
+              + ';arg={"path": "' + (this.selectedFolder + url.substring(url.lastIndexOf('/'))).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
+            console.log(new File().resolveLocalFilesystemUrl(url))
+            // dropboxRequest.send();
+          },
+          (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
       })
       .catch((error) => this.toast.showShortCenter(error).subscribe((toast) => { }));
   }
