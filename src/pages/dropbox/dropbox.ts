@@ -280,10 +280,12 @@ export class DropboxPage {
   }
 
   pickAndSendFile() {
-    console.dir(window)
     this.fileChooser.open()
       .then((uri) => {
         let dropboxRequest = new XMLHttpRequest();
+        dropboxRequest.addEventListener('progress', (info) => {
+          
+        });
 
         window.FilePath.resolveNativePath(
           uri,
@@ -293,11 +295,12 @@ export class DropboxPage {
 
             window.resolveLocalFileSystemURL(
               url,
-              (fileEntry) => fileEntry.file((file) => {
-                let fileReader = new FileReader();
-                fileReader.onloadend = () => dropboxRequest.send(new Blob([new Uint8Array(fileReader.result)]));
-                fileReader.readAsArrayBuffer(file);
-              }),
+              (fileEntry) => fileEntry.file(
+                (file) => {
+                  let fileReader = new FileReader();
+                  fileReader.onloadend = () => dropboxRequest.send(new Blob([new Uint8Array(fileReader.result)], { type: 'application/octet-stream' }));
+                  fileReader.readAsArrayBuffer(file);
+                }),
               (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
           },
           (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
