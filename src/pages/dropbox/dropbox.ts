@@ -295,16 +295,12 @@ export class DropboxPage {
         
           let dropboxRequest = new XMLHttpRequest();
 
-          dropboxRequest.upload.onloadstart = () => {
-            alert.present();
-          };
+          dropboxRequest.upload.onloadstart = () => alert.present();
 
-          dropboxRequest.upload.onprogress = (info) => {
-            alert.setMessage(
+          dropboxRequest.upload.onprogress = (info) => alert.setMessage(
               '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>
               + '<p>Progress: ' + Math.round((info.loaded / info.total) * 100) + '%</p>'
             );
-          };
           
           dropboxRequest.upload.onloadend = () => this.toast.showShortBottom('Upload finished').subscribe((toast) => { });
 
