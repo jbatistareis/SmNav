@@ -290,7 +290,8 @@ export class DropboxPage {
             title: 'Upload status',
             subTitle: filename,
             message: '',
-            buttons: ['Hide']
+            buttons: ['Hide'],
+            enableBackdropDismiss: false
           });
         
           let dropboxRequest = new XMLHttpRequest();
