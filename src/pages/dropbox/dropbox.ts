@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading, BlockerDelegate } from 'ionic-angular';
+import { NavController, LoadingController, AlertController, ModalController, NavParams, Loading } from 'ionic-angular';
 import { File } from '@ionic-native/file';
 import { Toast } from '@ionic-native/toast';
 import { InAppBrowser, InAppBrowserObject } from '@ionic-native/in-app-browser';
@@ -93,7 +93,7 @@ export class DropboxPage {
                 if (file['size'])
                   file['sizeHu'] = this.parseSize(file['size']);
 
-                let extension = file.name.substring(file.name.indexOf('.'));
+                let extension = file.name.substring(file.name.lastIndexOf('.'));
                 if (this.text.indexOf(extension) >= 0) {
                   file['icon'] = this.icons[1];
 
@@ -261,14 +261,10 @@ export class DropboxPage {
     };
 
     dropboxRequest.onprogress = (info) => { fileData['downloadProgress'] = Math.round((info.loaded / info.total) * 100); };
-
     dropboxRequest.onerror = (error) => (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
-
-
     dropboxRequest.send();
   }
 
-  // TODO find the magic behind it
   uploadFile(event) {
     this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
       .then(
@@ -281,37 +277,36 @@ export class DropboxPage {
   }
 
   pickAndSendFile() {
+    let dropboxRequest = new XMLHttpRequest();
+
+    let alert = this.alertController.create({
+      title: 'Upload status',
+      subTitle: '',
+      message: '',
+      buttons: ['Hide'],
+      enableBackdropDismiss: false
+    });
+
+    dropboxRequest.upload.onprogress = (info) => alert.setMessage(
+      '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>'
+      + '<p>Progress: ' + Math.round((info.loaded / info.total) * 100) + '%</p>'
+    );
+
+    dropboxRequest.upload.onloadstart = () => alert.present();
+    dropboxRequest.upload.onloadend = () => this.toast.showShortBottom('Upload finished').subscribe((toast) => { });
+    dropboxRequest.upload.onerror = (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
+
     this.fileChooser.open()
       .then(
-        (uri) => {
-          let filename = url.substring(url.lastIndexOf('/') + 1)).replace(/\/+/g, '/');
-        
-          let alert = this.alertController.create({
-            title: 'Upload status',
-            subTitle: filename,
-            message: '',
-            buttons: ['Hide'],
-            enableBackdropDismiss: false
-          });
-        
-          let dropboxRequest = new XMLHttpRequest();
-
-          dropboxRequest.upload.onloadstart = () => alert.present();
-
-          dropboxRequest.upload.onprogress = (info) => alert.setMessage(
-              '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>
-              + '<p>Progress: ' + Math.round((info.loaded / info.total) * 100) + '%</p>'
-            );
-          
-          dropboxRequest.upload.onloadend = () => this.toast.showShortBottom('Upload finished').subscribe((toast) => { });
-
-          dropboxRequest.onerror = (error) => (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
-
+        (uri) =>
           window.FilePath.resolveNativePath(
             uri,
             (url) => {
+              let filename = url.substring(url.lastIndexOf('/') + 1);
+              alert.setSubTitle(filename);
+
               dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
-                + ';arg={"path": "' + (this.selectedFolder + '/' + filename + '", "mode": "overwrite"}');
+                + ';arg={"path": "' + (this.selectedFolder + '/' + filename).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
 
               window.resolveLocalFileSystemURL(
                 url,
@@ -323,8 +318,7 @@ export class DropboxPage {
                   }),
                 (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
             },
-            (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
-        })
+            (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { })))
       .catch((error) => this.toast.showShortCenter(error).subscribe((toast) => { }));
   }
 
@@ -361,10 +355,7 @@ export class DropboxPage {
 
   // auxiliary
   showLoading() {
-    this.loading = this.loadingController.create({
-      content: 'Please wait...'
-    });
-
+    this.loading = this.loadingController.create({ content: 'Please wait...' });
     this.loading.present();
   }
 
