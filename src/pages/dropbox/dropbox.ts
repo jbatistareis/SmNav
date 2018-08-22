@@ -221,14 +221,10 @@ export class DropboxPage {
               (error) => {
                 this.dismissLoading();
                 this.toast.showLongBottom('Cannot remove the file ' + file.name + '.').subscribe((toast) => { });
-              }
-            );
+              });
           }
         },
-        {
-          text: 'No',
-          handler: () => { }
-        }
+        { text: 'No' }
       ]
     });
     confirm.present();
@@ -241,10 +237,8 @@ export class DropboxPage {
     file.checkDir('cdvfile://localhost/sdcard/', 'SmNav')
       .then(
         (ok) => { },
-        (error) => {
-          file.resolveDirectoryUrl('cdvfile://localhost/sdcard/')
-            .then((directoryEntry) => file.getDirectory(directoryEntry, 'SmNav', { create: true }));
-        });
+        (error) => file.resolveDirectoryUrl('cdvfile://localhost/sdcard/')
+          .then((directoryEntry) => file.getDirectory(directoryEntry, 'SmNav', { create: true })));
 
     // download
     this.toast.showShortBottom('Downloading, please wait...').subscribe((toast) => { });
@@ -287,10 +281,19 @@ export class DropboxPage {
       enableBackdropDismiss: false
     });
 
-    dropboxRequest.upload.onprogress = (info) => alert.setMessage(
-      '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>'
-      + '<p>Progress: ' + Math.round((info.loaded / info.total) * 100) + '%</p>'
-    );
+    let currentPercentage = 0;
+    let previousPercentage = 0;
+    dropboxRequest.upload.onprogress = (info) => {
+      currentPercentage = Math.round((info.loaded / info.total) * 100);
+    
+      if(currentPercentage > previousPercentage){
+        previousPercentage = currentPercentage;
+      
+        alert.setMessage(
+          '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>'
+          + '<p>Progress: ' + currentPercentage + '%</p>'
+      }
+    )};
 
     dropboxRequest.upload.onloadstart = () => alert.present();
     dropboxRequest.upload.onloadend = () => this.toast.showShortBottom('Upload finished').subscribe((toast) => { });
