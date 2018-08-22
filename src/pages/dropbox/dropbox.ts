@@ -175,14 +175,12 @@ export class DropboxPage {
         break;
 
       case 'file':
-        this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE)
-          .then(
-            () => this.downloadFile(file),
-            () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE)
-              .then(
-                (success) => success.hasPermission
-                  ? this.downloadFile(file)
-                  : this.toast.showShortCenter('Cannot obtain permission').subscribe((toast) => { })));
+        this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE).then(
+          () => this.downloadFile(file),
+          () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE).then(
+            (success) => success.hasPermission
+              ? this.downloadFile(file)
+              : this.toast.showShortCenter('Cannot obtain permission').subscribe((toast) => { })));
         break;
 
       default:
@@ -260,14 +258,12 @@ export class DropboxPage {
   }
 
   uploadFile(event) {
-    this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
-      .then(
-        () => this.pickAndSendFile(),
-        () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE)
-          .then(
-            (success) => success.hasPermission
-              ? this.pickAndSendFile()
-              : this.toast.showShortCenter('Cannot obtain permission').subscribe((toast) => { })));
+    this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE).then(
+      () => this.pickAndSendFile(),
+      () => this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE).then(
+        (success) => success.hasPermission
+          ? this.pickAndSendFile()
+          : this.toast.showShortCenter('Cannot obtain permission').subscribe((toast) => { })));
   }
 
   pickAndSendFile() {
@@ -285,43 +281,42 @@ export class DropboxPage {
     let previousPercentage = 0;
     dropboxRequest.upload.onprogress = (info) => {
       currentPercentage = Math.round((info.loaded / info.total) * 100);
-    
-      if(currentPercentage > previousPercentage){
+
+      if (currentPercentage > previousPercentage) {
         previousPercentage = currentPercentage;
-      
+
         alert.setMessage(
           '<p>Sent: ' + this.parseSize(info.loaded) + '&nbsp;of&nbsp;' + this.parseSize(info.total) + '</p>'
           + '<p>Progress: ' + currentPercentage + '%</p>'
+        );
       }
-    )};
+    };
 
     dropboxRequest.upload.onloadstart = () => alert.present();
     dropboxRequest.upload.onloadend = () => this.toast.showShortBottom('Upload finished').subscribe((toast) => { });
     dropboxRequest.upload.onerror = (error) => this.toast.showLongCenter(error.type).subscribe((toast) => { });
 
-    this.fileChooser.open()
-      .then(
-        (uri) =>
-          window.FilePath.resolveNativePath(
-            uri,
-            (url) => {
-              let filename = url.substring(url.lastIndexOf('/') + 1);
-              alert.setSubTitle(filename);
+    this.fileChooser.open().then(
+      (uri) => window.FilePath.resolveNativePath(
+        uri,
+        (url) => {
+          let filename = url.substring(url.lastIndexOf('/') + 1);
+          alert.setSubTitle(filename);
 
-              dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
-                + ';arg={"path": "' + (this.selectedFolder + '/' + filename).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
+          dropboxRequest.open('POST', 'https://content.dropboxapi.com/2/files/upload?authorization=Bearer ' + this.accessToken
+            + ';arg={"path": "' + (this.selectedFolder + '/' + filename).replace(/\/+/g, '/') + '", "mode": "overwrite"}');
 
-              window.resolveLocalFileSystemURL(
-                url,
-                (fileEntry) => fileEntry.file(
-                  (file) => {
-                    let fileReader = new FileReader();
-                    fileReader.onloadend = () => dropboxRequest.send(new Blob([new Uint8Array(fileReader.result)], { type: 'application/octet-stream' }));
-                    fileReader.readAsArrayBuffer(file);
-                  }),
-                (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
-            },
-            (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { })))
+          window.resolveLocalFileSystemURL(
+            url,
+            (fileEntry) => fileEntry.file(
+              (file) => {
+                let fileReader = new FileReader();
+                fileReader.onloadend = () => dropboxRequest.send(new Blob([fileReader.result], { type: 'application/octet-stream' }));
+                fileReader.readAsArrayBuffer(file);
+              }),
+            (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
+        },
+        (error) => this.toast.showShortCenter(error.message).subscribe((toast) => { })))
       .catch((error) => this.toast.showShortCenter(error).subscribe((toast) => { }));
   }
 
