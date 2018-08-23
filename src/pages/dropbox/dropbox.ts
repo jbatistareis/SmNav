@@ -363,6 +363,14 @@ export class DropboxPage {
     clientIdRequest.send();
   }
 
+  showDetails(file) {
+
+  }
+
+  showPdf(name, url) {
+
+  }
+
   // auxiliary
   showLoading() {
     this.loading = this.loadingController.create({ content: 'Please wait...' });
