@@ -4,4 +4,4 @@ My main motivaion for this project is that i (*as you can see*) don't like the o
 This is a revamped version, the first one was very basic, had its fair share of bugs, but did the job.  
 Built with Ionic, it has some personal QoL changes comparated to the official.  
 
-For developers: before running, set your own Dropbox client ID in the file `assets/config.json`
+For developers: before running, set your own Dropbox client ID in the file `config.json`
