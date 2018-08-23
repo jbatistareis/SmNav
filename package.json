@@ -80,6 +80,7 @@
     ]
   },
   "config": {
-    "ionic_copy": "./scripts/copy-custom-libs.js"
+    "ionic_copy": "./scripts/copy-custom-libs.js",
+	"ionic_copy": "./scripts/copy-custom-config.js"
   }
 }

@@ -346,7 +346,7 @@ export class DropboxPage {
 
       let listener = browser.on('loadstart').subscribe(
         (event: any) => {
-          // Ignore the dropbox authorize screen
+          // Ignore the dropbox authorize page
           if (event.url.indexOf('oauth2/authorize') > -1)
             return;
 
