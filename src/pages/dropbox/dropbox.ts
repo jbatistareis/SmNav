@@ -261,7 +261,7 @@ export class DropboxPage {
     dropboxRequest.open('GET', 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken
       + ';arg={"path": "' + fileData.path_display + '"}');
 
-    dropboxRequest.onload = () => {
+    dropboxRequest.onloadend = () => {
       file.writeFile('cdvfile://localhost/sdcard/SmNav', fileData.name, dropboxRequest.response, { replace: true })
         .then(() => this.toast.showShortBottom('File saved').subscribe((toast) => { }))
         .catch((error) => this.toast.showShortCenter(error.message).subscribe((toast) => { }));
@@ -336,26 +336,31 @@ export class DropboxPage {
   }
 
   login() {
-    this.dropbox = new Dropbox({ clientId: '4qlsux16dbkc0pv' });
+    let clientIdRequest = new XMLHttpRequest();
+    clientIdRequest.open('GET', 'assets/config.json');
+    clientIdRequest.onloadend = () => {
+      this.dropbox = new Dropbox({ clientId: JSON.parse(clientIdRequest.response).clientId });
 
-    let redirectUrl = 'http://localhost/callback';
-    let browser = this.inAppBrowser.create(this.dropbox.getAuthenticationUrl(redirectUrl), '_self', 'location=no');
+      let redirectUrl = 'http://localhost/callback';
+      let browser = this.inAppBrowser.create(this.dropbox.getAuthenticationUrl(redirectUrl), '_self', 'location=no');
 
-    let listener = browser.on('loadstart').subscribe(
-      (event: any) => {
-        // Ignore the dropbox authorize screen
-        if (event.url.indexOf('oauth2/authorize') > -1)
-          return;
+      let listener = browser.on('loadstart').subscribe(
+        (event: any) => {
+          // Ignore the dropbox authorize screen
+          if (event.url.indexOf('oauth2/authorize') > -1)
+            return;
 
-        // Check the redirect uri
-        if (event.url.indexOf(redirectUrl) > -1) {
-          browser.close();
-          this.nativeStorage.setItem('dropboxAccessToken', event.url.split('=')[1].split('&')[0]).then(() => this.getInitData(undefined));
-        }
+          // Check the redirect uri
+          if (event.url.indexOf(redirectUrl) > -1) {
+            browser.close();
+            this.nativeStorage.setItem('dropboxAccessToken', event.url.split('=')[1].split('&')[0]).then(() => this.getInitData(undefined));
+          }
 
-        listener.unsubscribe();
-      }
-    )
+          listener.unsubscribe();
+        });
+    };
+
+    clientIdRequest.send();
   }
 
   // auxiliary
