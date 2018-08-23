@@ -9,7 +9,7 @@
         <i class="fa fa-refresh fa-lg"></i>
       </button>
       <span>&nbsp;</span>
-      <button ion-button icon-only (click)="uploadFile($event)">
+      <button ion-button icon-only (click)="uploadFile()">
         <i class="fa fa-cloud-upload fa-lg"></i>
       </button>
     </ion-buttons>
@@ -20,8 +20,8 @@
   <div text-center *ngIf="loginButton">
     <p></p>
     <ion-buttons>
-      <button ion-button (click)="login($event)">
-        <i class="fa fa-dropbox"></i>&nbsp;Grant access to your Dropbox account
+      <button ion-button (click)="login()">
+        <i class="fa fa-dropbox"></i>&nbsp;Grant access to your Dropbox
       </button>
     </ion-buttons>
   </div>
@@ -30,7 +30,7 @@
     <ion-list>
       <ion-item-sliding *ngFor="let item of items">
         <!-- directory -->
-        <button ion-item (click)="select($event, item)" *ngIf="!item.sizeHu" text-wrap>
+        <button ion-item (click)="select(item)" *ngIf="!item.sizeHu" text-wrap>
           <ion-avatar item-start>
             <i class="fa fa-folder fa-2x"></i>
           </ion-avatar>
@@ -49,13 +49,13 @@
           </p>
         </ion-item>
         <ion-item-options side="left" *ngIf="item.sizeHu">
-          <button style="width: 70px;" ion-button color="primary" (click)="select($event, item)">
+          <button style="width: 70px;" ion-button color="primary" (click)="select(item)">
             <i class="fa fa-cloud-download fa-2x"></i>
           </button>
-          <button style="width: 70px;" ion-button color="secondary" (click)="showDetails($event, item)">
+          <button style="width: 70px;" ion-button color="secondary" (click)="showDetails(item)">
             <i class="fa fa-eye fa-2x"></i>
           </button>
-          <button style="width: 70px;" ion-button color="danger" (click)="confirmDelete($event, item)">
+          <button style="width: 70px;" ion-button color="danger" (click)="confirmDelete(item)">
             <i class="fa fa-trash fa-2x"></i>
           </button>
         </ion-item-options>
