@@ -9,6 +9,9 @@ import { FileChooser } from '@ionic-native/file-chooser';
 
 import { Dropbox } from 'dropbox';
 
+import { PdfViewPage } from '../pdf_view/pdf_view';
+import { DetailsModalPage } from '../details_modal/details_modal';
+
 declare var window: any;
 
 @Component({
@@ -21,7 +24,7 @@ export class DropboxPage {
   private accessToken: string;
 
   private selectedFolder: string;
-  private items: any[] = [];
+  public items: any[] = [];
   private loginButton: Boolean = false;
 
   private icons: string[] = ['fa fa-file-o fa-2x', 'fa fa-file-text-o fa-2x', 'fa fa-file-archive-o fa-2x', 'fa fa-film fa-2x',
@@ -364,11 +367,38 @@ export class DropboxPage {
   }
 
   showDetails(file) {
+    if ((this.text.indexOf(file.name.substring(file.name.indexOf('.'))) >= 0) || (this.script.indexOf(file.name.substring(file.name.indexOf('.'))) >= 0)) {
+      this.toast.showShortBottom('Loading text.')
+        .subscribe((toast) => { });
+      this.dropbox.filesDownload({ path: file.path_display }).then(
+        (response) => {
+          let fileReader = new FileReader();
+          fileReader.onloadend = (event) => {
+            file['textPreview'] = (fileReader.result as string).replace(/\n|\r/g, '</br>').replace('\t', '&emsp;');
 
+            this.modalController.create(DetailsModalPage, { file: file, icons: this.icons }).present();
+          }
+
+          fileReader.readAsText(response['fileBlob']);
+        });
+
+    } else if (this.document.indexOf(file.name.substring(file.name.indexOf('.'))) >= 0) {
+      this.showPdf(file.name, 'https://content.dropboxapi.com/2/files/get_preview?authorization=Bearer ' + this.accessToken
+        + ';arg={"path": "' + file.path_display + '"}');
+
+    } else if (this.pdf.indexOf(file.name.substring(file.name.indexOf('.'))) >= 0) {
+      this.showPdf(file.name, 'https://content.dropboxapi.com/2/files/download?authorization=Bearer ' + this.accessToken
+        + ';arg={"path": "' + file.path_display + '"}');
+
+    } else if (this.table.indexOf(file.name.substring(file.name.indexOf('.'))) >= 0) {
+      //find ways
+    } else {
+      this.modalController.create(DetailsModalPage, { file: file, icons: this.icons }).present();
+    }
   }
 
   showPdf(name, url) {
-
+    this.navCtrl.push(PdfViewPage, { name: name, url: url });
   }
 
   // auxiliary

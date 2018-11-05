@@ -1,0 +1,9 @@
+<ion-list>
+    <ion-item-divider text-center color="light">{{pdfViewPage.pageCurr}}/{{pdfViewPage.pageTotal}}</ion-item-divider>
+    <ion-item>
+        <ion-range min="100" max="300" step="1" [(ngModel)]="pdfViewPage.zoomValue" (ionChange)="pdfViewPage.queueRenderPage(pdfViewPage.pageCurr)">
+            <i range-left class="fa fa-search"></i>
+            <ion-label range-right>{{pdfViewPage.zoomValue}}%</ion-label>
+        </ion-range>
+    </ion-item>
+</ion-list>

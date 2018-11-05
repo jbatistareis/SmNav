@@ -1,0 +1,44 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-buttons left>
+            <span class="icon">
+                <i [class]="file.icon"></i>
+            </span>
+        </ion-buttons>
+        <ion-title>
+            Details
+        </ion-title>
+        <ion-buttons end>
+            <button ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+<ion-content>
+    <ion-grid>
+        <ion-row>
+            <ion-col col-12>
+                <ion-item text-wrap>
+                    <h2>{{file.name}}</h2>
+                    <h3>Size: {{file.sizeHu}}</h3>
+                    <p>Last modified: {{file.server_modified}}</p>
+                </ion-item>
+            </ion-col>
+        </ion-row>
+        <ion-row style="text-align: center;" *ngIf="file.bigThumb">
+            <ion-col col-12><img [src]="file.bigThumb" /></ion-col>
+        </ion-row>
+        <ion-row text-wrap *ngIf="file.textPreview">
+            <p id="textPreviewArea"></p>
+        </ion-row>
+        <ion-row text-wrap *ngIf="file.mediaType">
+            <audio controls id="music-player" *ngIf="file.mediaType.startsWith('audio')">
+                <source src="{{file.mediaUrl}}" type="{{file.mediaType}}">
+            </audio>
+            <video controls [width]="width" [height]="height" class="video-player" *ngIf="file.mediaType.startsWith('video')">
+                <source src="{{file.mediaUrl}}" type="{{file.mediaType}}">
+            </video>
+        </ion-row>
+    </ion-grid>
+</ion-content>

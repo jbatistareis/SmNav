@@ -7,6 +7,10 @@ import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
 import { DropboxPage } from '../pages/dropbox/dropbox';
 
+import { PdfViewPage } from '../pages/pdf_view/pdf_view';
+import { DetailsModalPage } from '../pages/details_modal/details_modal';
+import { PdfPopoverPage } from '../pages/pdf_view/pdf_popover';
+
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
@@ -20,7 +24,10 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
     MyApp,
     HomePage,
     ListPage,
-    DropboxPage
+    DropboxPage,
+    PdfViewPage,
+    PdfPopoverPage,
+    DetailsModalPage
   ],
   imports: [
     BrowserModule,
@@ -31,7 +38,10 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
     MyApp,
     HomePage,
     ListPage,
-    DropboxPage
+    DropboxPage,
+    PdfViewPage,
+    PdfPopoverPage,
+    DetailsModalPage
   ],
   providers: [
     StatusBar,
