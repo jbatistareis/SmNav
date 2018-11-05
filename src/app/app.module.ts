@@ -3,9 +3,8 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
-import { ListPage } from '../pages/list/list';
 import { DropboxPage } from '../pages/dropbox/dropbox';
+import { LogoutPage } from '../pages/logout/logout';
 
 import { PdfViewPage } from '../pages/pdf_view/pdf_view';
 import { DetailsModalPage } from '../pages/details_modal/details_modal';
@@ -22,12 +21,11 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
 @NgModule({
   declarations: [
     MyApp,
-    HomePage,
-    ListPage,
     DropboxPage,
     PdfViewPage,
     PdfPopoverPage,
-    DetailsModalPage
+    DetailsModalPage,
+    LogoutPage
   ],
   imports: [
     BrowserModule,
@@ -36,12 +34,11 @@ import { AndroidPermissions } from '@ionic-native/android-permissions';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage,
-    ListPage,
     DropboxPage,
     PdfViewPage,
     PdfPopoverPage,
-    DetailsModalPage
+    DetailsModalPage,
+    LogoutPage
   ],
   providers: [
     StatusBar,

@@ -391,7 +391,7 @@ export class DropboxPage {
         + ';arg={"path": "' + file.path_display + '"}');
 
     } else if (this.table.indexOf(file.name.substring(file.name.indexOf('.'))) >= 0) {
-      //find ways
+      // find ways
     } else {
       this.modalController.create(DetailsModalPage, { file: file, icons: this.icons }).present();
     }
